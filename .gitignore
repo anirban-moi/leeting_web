@@ -21,6 +21,7 @@ pnpm-debug.log*
 # Environment variables
 .env*.local
 .env
+!.env.example
 
 # Vercel
 .vercel
@@ -40,3 +41,4 @@ next-env.d.ts
 /docs/
 /plan/
 LEETING_WEB_PLAN.md
+/test/

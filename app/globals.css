@@ -83,3 +83,88 @@ body {
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
+
+/* ==============================================================================
+   CLERK DARK THEME CONTRAST & VISIBILITY OVERRIDES (Crisp Light Text)
+   ============================================================================== */
+.cl-card {
+  background-color: #0c1018 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #f8fafc !important;
+}
+
+.cl-headerTitle {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
+.cl-headerSubtitle {
+  color: #cbd5e1 !important;
+}
+
+.cl-socialButtonsBlockButton {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  color: #f8fafc !important;
+}
+
+.cl-socialButtonsBlockButton:hover {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.cl-socialButtonsBlockButtonText {
+  color: #f8fafc !important;
+  font-weight: 600 !important;
+}
+
+.cl-dividerLine {
+  background-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+.cl-dividerText {
+  color: #94a3b8 !important;
+  font-weight: 600 !important;
+}
+
+.cl-formFieldLabel {
+  color: #f1f5f9 !important;
+  font-weight: 600 !important;
+}
+
+.cl-formFieldInput {
+  background-color: #131823 !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+}
+
+.cl-formFieldInput::placeholder {
+  color: #64748b !important;
+}
+
+.cl-formButtonPrimary {
+  background: linear-gradient(to right, #f59e0b, #ffa116) !important;
+  color: #090a0f !important;
+  font-weight: 800 !important;
+}
+
+.cl-footerActionText {
+  color: #cbd5e1 !important;
+}
+
+.cl-footerActionLink {
+  color: #ffa116 !important;
+  font-weight: 700 !important;
+}
+
+.cl-identityPreviewText {
+  color: #ffffff !important;
+}
+
+.cl-userButtonPopoverCard {
+  background-color: #0c1018 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+.cl-userButtonPopoverActionButtonText {
+  color: #f1f5f9 !important;
+}

@@ -1,9 +1,17 @@
 'use client';
 
-import { Calendar, CheckCircle2, Tag, ArrowRight, Sparkles } from 'lucide-react';
+import { Calendar, CheckCircle2, Tag, ArrowRight, Sparkles, ExternalLink } from 'lucide-react';
 
 export default function ChallengeCard({ challenge }) {
-  const isSolved = challenge.status === 'Solved';
+  if (!challenge) return null;
+
+  const isSolved = challenge.isSolved === true || challenge.status === 'Solved';
+  const tags = challenge.topicTags || challenge.tags || [];
+  const difficulty = challenge.difficulty || 'Medium';
+  const title = challenge.title || 'Daily Coding Challenge';
+  const url = challenge.link || challenge.url || 'https://leetcode.com/problemset/';
+  const frontendId = challenge.frontendId ? `#${challenge.frontendId}` : null;
+  const dateText = challenge.date || 'Today';
 
   const difficultyConfig = {
     Easy: {
@@ -29,7 +37,7 @@ export default function ChallengeCard({ challenge }) {
     },
   };
 
-  const diff = difficultyConfig[challenge.difficulty] || difficultyConfig.Easy;
+  const diff = difficultyConfig[difficulty] || difficultyConfig.Medium;
 
   return (
     <div className="glass-obsidian-card group relative p-6 sm:p-7 rounded-3xl flex flex-col justify-between">
@@ -44,7 +52,7 @@ export default function ChallengeCard({ challenge }) {
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
                 Daily Coding Challenge
               </span>
-              <span className="text-[10px] text-slate-500">{challenge.date}</span>
+              <span className="text-[10px] text-slate-500">{dateText}</span>
             </div>
           </div>
 
@@ -69,33 +77,38 @@ export default function ChallengeCard({ challenge }) {
         <div className="mt-5 space-y-4">
           <div className="flex items-baseline gap-3 flex-wrap">
             <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight group-hover:text-amber-400 transition-colors">
-              {challenge.title}
+              {frontendId && <span className="text-slate-500 font-mono text-xl mr-2">{frontendId}</span>}
+              {title}
             </h3>
 
             <div className="flex items-center gap-2">
               <span className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider border ${diff.bg} ${diff.text} ${diff.border} ${diff.glow}`}>
                 <span className={`w-1.5 h-1.5 rounded-full ${diff.dot}`} />
-                {challenge.difficulty}
+                {difficulty}
               </span>
 
-              <span className="text-xs text-slate-400 font-mono bg-white/[0.04] px-2.5 py-0.5 rounded-lg border border-white/[0.06]">
-                Acceptance: {challenge.acceptance}
-              </span>
+              {challenge.acceptance && (
+                <span className="text-xs text-slate-400 font-mono bg-white/[0.04] px-2.5 py-0.5 rounded-lg border border-white/[0.06]">
+                  Acceptance: {challenge.acceptance}
+                </span>
+              )}
             </div>
           </div>
 
           {/* Tags */}
-          <div className="flex items-center gap-2 flex-wrap pt-1">
-            {challenge.tags.map((tag) => (
-              <span
-                key={tag}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-medium bg-white/[0.03] text-slate-300 border border-white/[0.06] hover:border-white/[0.14] transition-colors"
-              >
-                <Tag className="w-3 h-3 text-slate-500" />
-                {tag}
-              </span>
-            ))}
-          </div>
+          {tags.length > 0 && (
+            <div className="flex items-center gap-2 flex-wrap pt-1">
+              {tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-medium bg-white/[0.03] text-slate-300 border border-white/[0.06] hover:border-white/[0.14] transition-colors"
+                >
+                  <Tag className="w-3 h-3 text-slate-500" />
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -103,17 +116,29 @@ export default function ChallengeCard({ challenge }) {
       <div className="pt-6 mt-6 border-t border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-2 text-xs text-slate-400">
           <Sparkles className="w-3.5 h-3.5 text-leeting-orange shrink-0" />
-          <span>Solving maintains your streak and unblocks distraction shields.</span>
+          <span>
+            {isSolved
+              ? 'Challenge solved! Streak secured and distraction shield unlocked.'
+              : 'Solving maintains your streak and unlocks distraction shields.'}
+          </span>
         </div>
 
         <a
-          href={challenge.url}
+          href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-2xl text-xs font-bold bg-gradient-to-r from-amber-500 to-[#ffa116] hover:from-amber-400 hover:to-orange-500 text-slate-950 shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+          className={`inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-2xl text-xs font-bold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${
+            isSolved
+              ? 'bg-white/[0.06] hover:bg-white/[0.12] text-slate-200 border border-white/[0.1]'
+              : 'bg-gradient-to-r from-amber-500 to-[#ffa116] hover:from-amber-400 hover:to-orange-500 text-slate-950 shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40'
+          }`}
         >
-          <span>Solve on LeetCode</span>
-          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+          <span>{isSolved ? 'Review Submission' : 'Solve on LeetCode'}</span>
+          {isSolved ? (
+            <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+          ) : (
+            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+          )}
         </a>
       </div>
     </div>

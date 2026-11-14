@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Play, Pause, RotateCcw, Sparkles, Shield } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Play, Pause, RotateCcw, Sparkles, Shield, CheckCircle2, Flame, Award, Zap } from 'lucide-react';
 import { formatTime } from '../../lib/utils';
+import { useAuth } from '../auth/AuthProvider';
+import { logFocusSession } from '../../lib/services/focus-service';
 
 const DURATIONS = [
   { label: '25m', name: 'Pomodoro', minutes: 25 },
@@ -11,38 +13,114 @@ const DURATIONS = [
   { label: '90m', name: 'Marathon', minutes: 90 },
 ];
 
-export default function FocusTimer() {
+export default function FocusTimer({ bridge = null, onSessionCompleted = null }) {
+  const { user } = useAuth();
   const [selectedMinutes, setSelectedMinutes] = useState(25);
   const [secondsLeft, setSecondsLeft] = useState(25 * 60);
   const [isActive, setIsActive] = useState(false);
   const [sessionCount, setSessionCount] = useState(3);
+  const [completedCelebration, setCompletedCelebration] = useState(null);
 
+  // Sync with Remote Timer from Browser Extension Bridge
+  useEffect(() => {
+    if (bridge?.remoteTimer) {
+      const rt = bridge.remoteTimer;
+      if (rt.isActive && rt.endTime) {
+        const remaining = Math.max(0, Math.round((rt.endTime - Date.now()) / 1000));
+        setSecondsLeft(remaining);
+        setIsActive(true);
+        if (rt.durationMinutes) {
+          setSelectedMinutes(rt.durationMinutes);
+        }
+      } else if (rt.isActive === false && isActive) {
+        setIsActive(false);
+      }
+    }
+  }, [bridge?.remoteTimer]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Countdown Interval
   useEffect(() => {
     let interval = null;
     if (isActive && secondsLeft > 0) {
       interval = setInterval(() => {
-        setSecondsLeft((prev) => prev - 1);
+        setSecondsLeft((prev) => {
+          if (prev <= 1) {
+            handleComplete();
+            return 0;
+          }
+          return prev - 1;
+        });
       }, 1000);
-    } else if (secondsLeft === 0) {
-      setIsActive(false);
-      setSessionCount((prev) => prev + 1);
     }
     return () => clearInterval(interval);
-  }, [isActive, secondsLeft]);
+  }, [isActive, secondsLeft]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Session completion handler
+  const handleComplete = useCallback(async () => {
+    setIsActive(false);
+    setSessionCount((prev) => prev + 1);
+
+    const celebrationData = {
+      durationMinutes: selectedMinutes,
+      earnedCoins: selectedMinutes >= 60 ? 50 : selectedMinutes >= 45 ? 35 : 25,
+      timestamp: new Date(),
+    };
+    setCompletedCelebration(celebrationData);
+
+    // Stop remote timer in extension
+    if (bridge?.stopRemoteTimer) {
+      bridge.stopRemoteTimer().catch(() => {});
+    }
+
+    // Cloud logging to Supabase
+    if (user?.id) {
+      try {
+        await logFocusSession(user.id, {
+          durationMinutes: selectedMinutes,
+          completed: true,
+          notes: `Completed ${selectedMinutes}m Focus Cycle via Leeting Cloud`,
+        });
+        if (onSessionCompleted) {
+          onSessionCompleted();
+        }
+      } catch (err) {
+        console.warn('Failed to log completed session:', err);
+      }
+    } else if (onSessionCompleted) {
+      onSessionCompleted();
+    }
+  }, [selectedMinutes, bridge, user, onSessionCompleted]);
 
   const handleSelectDuration = (minutes) => {
+    if (isActive) return;
     setSelectedMinutes(minutes);
     setSecondsLeft(minutes * 60);
-    setIsActive(false);
+    setCompletedCelebration(null);
   };
 
-  const handleTogglePlay = () => {
-    setIsActive(!isActive);
+  const handleTogglePlay = async () => {
+    const nextActive = !isActive;
+    setIsActive(nextActive);
+    setCompletedCelebration(null);
+
+    if (nextActive) {
+      if (bridge?.startRemoteTimer) {
+        await bridge.startRemoteTimer(selectedMinutes);
+      }
+    } else {
+      if (bridge?.stopRemoteTimer) {
+        await bridge.stopRemoteTimer();
+      }
+    }
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
     setIsActive(false);
     setSecondsLeft(selectedMinutes * 60);
+    setCompletedCelebration(null);
+    if (bridge?.stopRemoteTimer) {
+      await bridge.stopRemoteTimer();
+    }
   };
 
   const totalSeconds = selectedMinutes * 60;
@@ -57,7 +135,8 @@ export default function FocusTimer() {
           <button
             key={dur.label}
             onClick={() => handleSelectDuration(dur.minutes)}
-            className={`px-3.5 sm:px-4 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 whitespace-nowrap ${
+            disabled={isActive}
+            className={`px-3.5 sm:px-4 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 whitespace-nowrap disabled:opacity-50 ${
               selectedMinutes === dur.minutes
                 ? 'bg-gradient-to-r from-amber-500 to-[#ffa116] text-slate-950 font-bold shadow-md shadow-orange-500/25'
                 : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
@@ -119,7 +198,7 @@ export default function FocusTimer() {
             {isActive ? (
               <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_12px_rgba(0,184,163,0.3)]">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                Focus Active
+                Focus Active · Shield Enforced
               </span>
             ) : (
               <span className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
@@ -167,10 +246,45 @@ export default function FocusTimer() {
         </button>
       </div>
 
-      {/* Bottom context notice */}
-      <div className="mt-7 flex items-center gap-2 text-xs text-slate-400 text-center">
-        <Sparkles className="w-3.5 h-3.5 text-leeting-orange shrink-0" />
-        <span>Extension agent enforces DNR block rules while the timer is running.</span>
+      {/* Completion Celebratory Banner */}
+      {completedCelebration && (
+        <div className="mt-6 w-full p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 backdrop-blur-md flex items-center justify-between animate-fadeIn">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+              <Award className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-xs font-bold text-white block">
+                {completedCelebration.durationMinutes}m Focus Cycle Completed!
+              </span>
+              <span className="text-[11px] text-emerald-400 flex items-center gap-1 font-mono">
+                <Flame className="w-3.5 h-3.5 fill-emerald-400" />
+                +{completedCelebration.earnedCoins} Focus Coins synced to cloud!
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={() => setCompletedCelebration(null)}
+            className="text-[11px] text-slate-400 hover:text-white px-2.5 py-1 rounded-lg bg-white/[0.05]"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* Bottom Bridge Status Notice */}
+      <div className="mt-6 flex items-center gap-2 text-xs text-slate-400 text-center">
+        {bridge?.isOnline ? (
+          <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
+            <Zap className="w-3.5 h-3.5 fill-emerald-400" />
+            Live sync active: Starting timer automatically enforces DNR shield in browser.
+          </span>
+        ) : (
+          <span className="flex items-center gap-1.5 text-slate-400">
+            <Sparkles className="w-3.5 h-3.5 text-leeting-orange shrink-0" />
+            Cloud mode: Sessions log automatically to Supabase.
+          </span>
+        )}
       </div>
     </div>
   );
