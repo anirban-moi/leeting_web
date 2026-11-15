@@ -85,7 +85,7 @@ Leeting operates **100% locally** and never transmits cookies, browsing data, or
 
 ### Method 1: Install Pre-Built Release (Recommended — No build needed)
 
-Download the pre-built zip archive for your browser from the [GitHub Releases](https://github.com/anirban-moi/leeting/releases) page:
+Download the pre-built zip archive for your browser from the [GitHub Releases](https://github.com/anirban-moi/leeting_web/releases) page:
 
 - **Chrome / Edge**: `leeting-1.0.9-chrome.zip`
 - **Firefox (MV3)**: `leeting-1.0.9-firefox.zip`
@@ -113,9 +113,9 @@ Download the pre-built zip archive for your browser from the [GitHub Releases](h
 If you prefer building directly from the source code:
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/anirban-moi/leeting.git
-cd leeting
+# 1. Clone the monorepo
+git clone https://github.com/anirban-moi/leeting_web.git
+cd leeting_web/extension
 
 # 2. Install dependencies
 pnpm install

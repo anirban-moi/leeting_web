@@ -1,2 +1,8 @@
+packages:
+  - '.'
+  - 'extension'
+
 allowBuilds:
   '@clerk/shared': true
+  'esbuild': true
+  'spawn-sync': true

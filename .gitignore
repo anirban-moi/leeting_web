@@ -1,16 +1,20 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+node_modules/
 /.pnpm-store
 
-# Next.js build output
+# Next.js & Web build output
 /.next/
 /out/
-
-# Production build artifacts
 /build
 /dist
+
+# Extension build output
+extension/.output/
+extension/.wxt/
+.output/
+.wxt/
 
 # Debug logs
 npm-debug.log*
