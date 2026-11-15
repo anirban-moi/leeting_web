@@ -448,7 +448,3 @@ For complete legal and permission disclosures, read [extension/PRIVACY.md](./ext
 | **Mozilla Firefox** | Manifest V3 (Gecko 113+) | Verified | Full MV3 background scripts & DNR redirects |
 
 ---
-
-## License
-
-MIT © [Anirban](https://github.com/anirban-moi)
