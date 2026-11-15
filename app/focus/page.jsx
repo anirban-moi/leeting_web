@@ -88,8 +88,11 @@ export default function FocusPage() {
   useEffect(() => {
     if (typeof solveBeforeScrollEnabled === 'boolean') {
       setSolveBeforeScroll(solveBeforeScrollEnabled);
+      if (solveBeforeScrollEnabled && !remoteDaily?.isSolved) {
+        setMasterFocus(true);
+      }
     }
-  }, [solveBeforeScrollEnabled]);
+  }, [solveBeforeScrollEnabled, remoteDaily?.isSolved]);
 
   // Keep Focus Mode Shield in sync with extension bridge
   useEffect(() => {
@@ -99,6 +102,15 @@ export default function FocusPage() {
   }, [focusModeEnabled]);
 
   const handleToggleMasterFocus = async () => {
+    const isDailySolved = Boolean(remoteDaily?.isSolved);
+    if (solveBeforeScroll && !isDailySolved && masterFocus) {
+      showSyncFeedback(
+        'Focus Mode is locked ON by Solve Before Scroll until today\'s challenge is solved.',
+        'warning'
+      );
+      return;
+    }
+
     const nextVal = !masterFocus;
     setMasterFocus(nextVal);
     const res = await setRemoteFocus(nextVal);
@@ -144,19 +156,32 @@ export default function FocusPage() {
   const handleToggleSolveBeforeScroll = async () => {
     const nextVal = !solveBeforeScroll;
     setSolveBeforeScroll(nextVal);
-    const res = await setRemoteSolveBeforeScroll(nextVal);
 
-    if (user?.id) {
-      await saveUserPreferences(user.id, { solveBeforeScroll: nextVal, focusRules: rules });
+    // If turning ON Solve Before Scroll and today's daily challenge is pending, auto-invoke Focus Mode immediately!
+    const isDailySolved = Boolean(remoteDaily?.isSolved);
+    if (nextVal && !isDailySolved) {
+      setMasterFocus(true);
     }
 
+    const res = await setRemoteSolveBeforeScroll(nextVal);
+
     if (res?.success) {
+      if (typeof res.focusMode === 'boolean') {
+        setMasterFocus(res.focusMode);
+      }
       showSyncFeedback(
         `Solve Before Scroll ${nextVal ? 'Enforced' : 'Disabled'} in ${browserName} extension!`,
         'success'
       );
     } else {
+      if (!nextVal) {
+        setMasterFocus(false);
+      }
       showSyncFeedback(`Extension offline or not reloaded. Saved to cloud.`, 'warning');
+    }
+
+    if (user?.id) {
+      await saveUserPreferences(user.id, { solveBeforeScroll: nextVal, focusRules: rules });
     }
   };
 

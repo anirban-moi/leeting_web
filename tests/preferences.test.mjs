@@ -8,7 +8,7 @@ import {
 describe('User Preferences & Cloud Sync Workflows', () => {
   it('returns default preferences from mock data when user is null', async () => {
     const prefs = await fetchUserPreferences(null);
-    assert.strictEqual(prefs.solveBeforeScroll, true);
+    assert.strictEqual(prefs.solveBeforeScroll, false);
     assert.ok(Array.isArray(prefs.focusRules));
     assert.strictEqual(prefs.focusRules.length, 5);
   });

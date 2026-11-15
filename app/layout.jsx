@@ -58,7 +58,7 @@ export default function RootLayout({ children }) {
         },
       }}
     >
-      <html lang="en" className="dark scroll-smooth">
+      <html lang="en" className="dark scroll-smooth" suppressHydrationWarning>
         <body className="min-h-screen bg-[#08090d] text-slate-100 flex flex-col md:flex-row antialiased selection:bg-leeting-orange/20 selection:text-leeting-orange relative">
           <AuthProvider>
             {/* Ambient atmospheric lighting behind glass panels */}
