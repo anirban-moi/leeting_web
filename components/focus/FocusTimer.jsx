@@ -21,6 +21,62 @@ export default function FocusTimer({ bridge = null, onSessionCompleted = null })
   const [sessionCount, setSessionCount] = useState(3);
   const [completedCelebration, setCompletedCelebration] = useState(null);
 
+  // Intro entrance animation (starts from 00:00 and counts up animated with ring oscillation)
+  const [isIntroComplete, setIsIntroComplete] = useState(false);
+  const [introSeconds, setIntroSeconds] = useState(0);
+  const [introProgress, setIntroProgress] = useState(0);
+  const [introSession, setIntroSession] = useState(0);
+
+  useEffect(() => {
+    // If timer is already running in extension bridge, skip intro animation
+    if (bridge?.remoteTimer?.isActive) {
+      setIsIntroComplete(true);
+      return;
+    }
+
+    let start = null;
+    let raf = null;
+    const duration = 1200;
+    const targetSec = selectedMinutes * 60;
+    const targetSession = 3;
+
+    const animateIntro = (timestamp) => {
+      if (!start) start = timestamp;
+      const elapsed = timestamp - start;
+      const p = Math.min(1, elapsed / duration);
+
+      // Fast ease out for digital clock 00:00 -> 25:00
+      const clockEase = 1 - Math.pow(1 - p, 3);
+      setIntroSeconds(Math.round(clockEase * targetSec));
+
+      // Session count 0 -> 3
+      setIntroSession(Math.round(clockEase * targetSession));
+
+      // Circular ring full oscillation: 0% -> 55% -> 0%
+      let ringPct = 0;
+      if (p < 0.45) {
+        const t = p / 0.45;
+        ringPct = (1 - Math.pow(1 - t, 3)) * 55;
+      } else {
+        const t = (p - 0.45) / 0.55;
+        const cosEase = (1 - Math.cos(t * Math.PI)) / 2;
+        ringPct = 55 * (1 - cosEase);
+      }
+      setIntroProgress(ringPct);
+
+      if (p < 1) {
+        raf = requestAnimationFrame(animateIntro);
+      } else {
+        setIsIntroComplete(true);
+      }
+    };
+
+    raf = requestAnimationFrame(animateIntro);
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Sync with Remote Timer from Browser Extension Bridge
   useEffect(() => {
     if (bridge?.remoteTimer) {
@@ -124,13 +180,16 @@ export default function FocusTimer({ bridge = null, onSessionCompleted = null })
   };
 
   const totalSeconds = selectedMinutes * 60;
-  const progressPercent = ((totalSeconds - secondsLeft) / totalSeconds) * 100;
+  const realProgressPercent = ((totalSeconds - secondsLeft) / totalSeconds) * 100;
+  const progressPercent = isIntroComplete || isActive ? realProgressPercent : introProgress;
   const strokeDashoffset = 552.92 - (552.92 * (100 - progressPercent)) / 100;
+  const displaySeconds = isIntroComplete || isActive ? secondsLeft : introSeconds;
+  const displaySession = isIntroComplete ? sessionCount : introSession;
 
   return (
     <div className="glass-obsidian relative p-6 sm:p-8 rounded-3xl flex flex-col items-center">
       {/* Top Header / Mode selector */}
-      <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-black/50 border border-white/[0.08] mb-8 max-w-full overflow-x-auto backdrop-blur-md">
+      <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-100 dark:bg-black/50 border border-slate-200 dark:border-white/[0.08] mb-8 max-w-full overflow-x-auto backdrop-blur-md">
         {DURATIONS.map((dur) => (
           <button
             key={dur.label}
@@ -139,7 +198,7 @@ export default function FocusTimer({ bridge = null, onSessionCompleted = null })
             className={`px-3.5 sm:px-4 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 whitespace-nowrap disabled:opacity-50 ${
               selectedMinutes === dur.minutes
                 ? 'bg-gradient-to-r from-amber-500 to-[#ffa116] text-slate-950 font-bold shadow-md shadow-orange-500/25'
-                : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/[0.04]'
             }`}
           >
             <span>{dur.label}</span>
@@ -168,7 +227,7 @@ export default function FocusTimer({ bridge = null, onSessionCompleted = null })
             cx="100"
             cy="100"
             r="88"
-            className="text-white/[0.04] stroke-current"
+            className="text-slate-200 dark:text-white/[0.04] stroke-current"
             strokeWidth="7"
             fill="transparent"
           />
@@ -190,26 +249,26 @@ export default function FocusTimer({ bridge = null, onSessionCompleted = null })
 
         {/* Center Digital Display */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-          <span className="text-5xl sm:text-6xl font-black text-white font-mono tracking-tight drop-shadow-lg">
-            {formatTime(secondsLeft)}
+          <span className="text-5xl sm:text-6xl font-black text-slate-900 dark:text-white font-mono tracking-tight drop-shadow-sm dark:drop-shadow-lg">
+            {formatTime(displaySeconds)}
           </span>
 
           <div className="mt-2.5 flex items-center gap-1.5">
             {isActive ? (
-              <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_12px_rgba(0,184,163,0.3)]">
+              <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-[0_0_12px_rgba(0,184,163,0.2)]">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
                 Focus Active · Shield Enforced
               </span>
             ) : (
-              <span className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
-                <Shield className="w-3.5 h-3.5 text-slate-500" />
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                <Shield className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                 Ready to focus
               </span>
             )}
           </div>
 
-          <span className="text-[10px] text-slate-400 mt-2 font-mono">
-            Session {sessionCount} of 4 • Target: 100m
+          <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-2 font-mono">
+            Session {displaySession} of 4 • Target: 100m
           </span>
         </div>
       </div>
@@ -220,7 +279,7 @@ export default function FocusTimer({ bridge = null, onSessionCompleted = null })
           onClick={handleTogglePlay}
           className={`flex items-center justify-center gap-2 px-8 py-3 rounded-2xl font-bold text-sm transition-all duration-300 shadow-xl ${
             isActive
-              ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30 hover:bg-amber-500/25 shadow-amber-500/10'
+              ? 'bg-amber-500/15 text-amber-600 dark:text-amber-300 border border-amber-500/30 hover:bg-amber-500/25 shadow-amber-500/10'
               : 'bg-gradient-to-r from-amber-500 to-[#ffa116] hover:from-amber-400 hover:to-orange-500 text-slate-950 shadow-orange-500/25 hover:scale-[1.02] active:scale-[0.98]'
           }`}
         >
@@ -239,7 +298,7 @@ export default function FocusTimer({ bridge = null, onSessionCompleted = null })
 
         <button
           onClick={handleReset}
-          className="p-3 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] text-slate-400 hover:text-white border border-white/[0.08] hover:border-white/[0.18] transition-all shadow-sm"
+          className="p-3 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-white/[0.08] hover:border-slate-300 dark:hover:border-white/[0.18] transition-all shadow-sm"
           title="Reset Timer"
         >
           <RotateCcw className="w-4 h-4" />

@@ -59,13 +59,13 @@ export default function FocusPage() {
       fetchUserPreferences(user.id).then((prefs) => {
         if (prefs) {
           if (prefs.focusRules) setRules(prefs.focusRules);
-          if (typeof prefs.solveBeforeScroll === 'boolean') {
+          if (typeof prefs.solveBeforeScroll === 'boolean' && !isOnline) {
             setSolveBeforeScroll(prefs.solveBeforeScroll);
           }
         }
       });
     }
-  }, [user]);
+  }, [user, isOnline]);
 
   // Load focus sessions history from Supabase / Local storage
   const loadHistory = useCallback(async () => {
@@ -86,20 +86,20 @@ export default function FocusPage() {
 
   // Keep Solve Before Scroll in sync with extension bridge
   useEffect(() => {
-    if (typeof solveBeforeScrollEnabled === 'boolean') {
+    if (isOnline && typeof solveBeforeScrollEnabled === 'boolean') {
       setSolveBeforeScroll(solveBeforeScrollEnabled);
       if (solveBeforeScrollEnabled && !remoteDaily?.isSolved) {
         setMasterFocus(true);
       }
     }
-  }, [solveBeforeScrollEnabled, remoteDaily?.isSolved]);
+  }, [isOnline, solveBeforeScrollEnabled, remoteDaily?.isSolved]);
 
   // Keep Focus Mode Shield in sync with extension bridge
   useEffect(() => {
-    if (typeof focusModeEnabled === 'boolean') {
+    if (isOnline && typeof focusModeEnabled === 'boolean') {
       setMasterFocus(focusModeEnabled);
     }
-  }, [focusModeEnabled]);
+  }, [isOnline, focusModeEnabled]);
 
   const handleToggleMasterFocus = async () => {
     const isDailySolved = Boolean(remoteDaily?.isSolved);
@@ -125,7 +125,10 @@ export default function FocusPage() {
         'success'
       );
     } else {
-      showSyncFeedback(`Extension offline or not reloaded. Saved to cloud.`, 'warning');
+      if (!isOnline) {
+        setMasterFocus(!nextVal);
+      }
+      showSyncFeedback(`Extension offline or standby. Click sync to retry.`, 'warning');
     }
   };
 
@@ -149,7 +152,7 @@ export default function FocusPage() {
     if (res?.success) {
       showSyncFeedback(`Rule updated in ${browserName} extension and synced with cloud!`, 'success');
     } else {
-      showSyncFeedback(`Extension offline or not reloaded. Saved to cloud.`, 'warning');
+      showSyncFeedback(`Extension offline or standby. Saved to cloud.`, 'warning');
     }
   };
 
@@ -174,10 +177,13 @@ export default function FocusPage() {
         'success'
       );
     } else {
-      if (!nextVal) {
-        setMasterFocus(false);
+      if (!isOnline) {
+        setSolveBeforeScroll(!nextVal);
+        if (!nextVal) {
+          setMasterFocus(false);
+        }
       }
-      showSyncFeedback(`Extension offline or not reloaded. Saved to cloud.`, 'warning');
+      showSyncFeedback(`Extension offline or standby. Click sync to retry.`, 'warning');
     }
 
     if (user?.id) {
@@ -238,10 +244,10 @@ export default function FocusPage() {
             <Clock className="w-4 h-4" />
             <span>Productivity & Automation</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
             Focus & Distraction Shield
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Execute Pomodoro focus cycles and remotely orchestrate Declarative Net Request blocking
             rules across your browsers.
           </p>
@@ -250,14 +256,14 @@ export default function FocusPage() {
         <button
           onClick={() => checkStatus()}
           title="Click to probe browser companion"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] transition border border-white/[0.08] shadow-sm self-start sm:self-auto cursor-pointer"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] transition border border-slate-200 dark:border-white/[0.08] shadow-sm self-start sm:self-auto cursor-pointer"
         >
           <div
             className={`w-2 h-2 rounded-full ${
               isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
             }`}
           />
-          <span className="text-xs font-semibold text-slate-200">
+          <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">
             {isOnline
               ? `${browserName} MV3 Agent Connected${latency ? ` (${latency}ms)` : ''}`
               : 'Local Extension Standby (Click to sync)'}
@@ -290,23 +296,23 @@ export default function FocusPage() {
                   className={`p-3 rounded-2xl border shrink-0 ${
                     solveBeforeScroll
                       ? 'bg-amber-500/10 text-leeting-orange border-amber-500/25 shadow-[0_0_15px_rgba(255,161,22,0.2)]'
-                      : 'bg-white/[0.04] text-slate-400 border-white/[0.08]'
+                      : 'bg-black/[0.02] dark:bg-white/[0.04] text-slate-400 border-black/5 dark:border-white/[0.08]'
                   }`}
                 >
                   <Lock className="w-6 h-6" />
                 </div>
                 <div>
                   <div className="flex items-center gap-3">
-                    <h3 className="text-lg sm:text-xl font-black text-white tracking-tight">
+                    <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight">
                       Solve Before Scroll
                     </h3>
                     <span
                       className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${
                         solveBeforeScroll
                           ? remoteDaily?.isSolved
-                            ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
-                            : 'bg-amber-500/15 text-amber-400 border-amber-500/30 shadow-[0_0_10px_rgba(255,161,22,0.2)]'
-                          : 'bg-white/[0.04] text-slate-400 border-white/[0.08]'
+                            ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+                            : 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 shadow-[0_0_10px_rgba(255,161,22,0.15)]'
+                          : 'bg-black/[0.03] dark:bg-white/[0.04] text-slate-500 dark:text-slate-400 border-black/5 dark:border-white/[0.08]'
                       }`}
                     >
                       {solveBeforeScroll
@@ -316,21 +322,21 @@ export default function FocusPage() {
                         : 'Disabled'}
                     </span>
                   </div>
-                  <p className="text-xs sm:text-sm text-slate-300 mt-2 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
                     {remoteDaily?.isSolved ? (
                       <span>
                         Today&apos;s daily challenge (
-                        <span className="text-emerald-400 font-semibold">
+                        <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
                           {remoteDaily?.title || 'Daily Challenge'}
                         </span>
-                        ) is <span className="text-emerald-400 font-bold">Solved</span>!
+                        ) is <span className="text-emerald-600 dark:text-emerald-400 font-bold">Solved</span>!
                         Distraction shield is unlocked for today.
                       </span>
                     ) : (
                       <span>
                         Automatically redirects algorithmic video and social feeds to LeetCode until
                         today&apos;s daily challenge (
-                        <span className="text-amber-400 font-semibold">
+                        <span className="text-amber-600 dark:text-amber-400 font-semibold">
                           {remoteDaily?.title || 'Daily Challenge'}
                         </span>
                         ) is marked as solved.
@@ -349,7 +355,7 @@ export default function FocusPage() {
                 className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 ease-in-out focus:outline-none ${
                   solveBeforeScroll
                     ? 'bg-gradient-to-r from-amber-500 to-[#ffa116] shadow-md shadow-orange-500/25'
-                    : 'bg-white/[0.1]'
+                    : 'bg-slate-200 dark:bg-white/[0.1]'
                 }`}
               >
                 <span
@@ -363,40 +369,40 @@ export default function FocusPage() {
 
           {/* Distraction Rules Section (Glassmorphic) */}
           <div className="glass-obsidian p-6 sm:p-8 rounded-3xl space-y-5">
-            <div className="flex items-center justify-between pb-4 border-b border-white/[0.06]">
+            <div className="flex items-center justify-between pb-4 border-b border-black/5 dark:border-white/[0.06]">
               <div className="flex items-center gap-2.5">
                 <div
                   className={`p-2 rounded-xl border transition-all ${
                     masterFocus
-                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25 shadow-[0_0_12px_rgba(0,184,163,0.2)]'
-                      : 'bg-white/[0.02] text-slate-500 border-white/[0.06]'
+                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25 shadow-[0_0_12px_rgba(0,184,163,0.15)]'
+                      : 'bg-black/[0.02] dark:bg-white/[0.02] text-slate-400 dark:text-slate-500 border-black/5 dark:border-white/[0.06]'
                   }`}
                 >
                   <ShieldCheck className="w-4 h-4" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2.5">
-                    <h3 className="text-base font-bold text-white tracking-tight">
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">
                       Focus Mode Shield
                     </h3>
                     <span
                       className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border transition-all ${
                         masterFocus
-                          ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30 shadow-[0_0_8px_rgba(0,184,163,0.2)]'
-                          : 'bg-white/[0.04] text-slate-400 border-white/[0.08]'
+                          ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 shadow-[0_0_8px_rgba(0,184,163,0.15)]'
+                          : 'bg-black/[0.03] dark:bg-white/[0.04] text-slate-500 dark:text-slate-400 border-black/5 dark:border-white/[0.08]'
                       }`}
                     >
                       {masterFocus ? 'Active' : 'Disabled'}
                     </span>
                   </div>
-                  <span className="text-xs text-slate-400">
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
                     Live Declarative Net Request rules across all browsers
                   </span>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
-                <span className="text-xs font-mono font-bold px-3 py-1 rounded-full bg-white/[0.04] text-slate-300 border border-white/[0.08]">
+                <span className="text-xs font-mono font-bold px-3 py-1 rounded-full bg-black/[0.03] dark:bg-white/[0.04] text-slate-700 dark:text-slate-300 border border-black/5 dark:border-white/[0.08]">
                   {rules.filter((r) => r.enabled).length} of {rules.length} active
                 </span>
 
@@ -410,7 +416,7 @@ export default function FocusPage() {
                   className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 ease-in-out focus:outline-none ${
                     masterFocus
                       ? 'bg-gradient-to-r from-emerald-500 to-[#00b8a3] shadow-md shadow-emerald-500/25'
-                      : 'bg-white/[0.1]'
+                      : 'bg-slate-200 dark:bg-white/[0.1]'
                   }`}
                 >
                   <span
@@ -440,22 +446,22 @@ export default function FocusPage() {
 
       {/* Target 4: Cloud Focus Session History & Analytics Card */}
       <div className="glass-obsidian p-6 sm:p-8 rounded-3xl space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-white/[0.06] gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-black/5 dark:border-white/[0.06] gap-4">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-2xl bg-amber-500/10 text-leeting-orange border border-amber-500/20 shadow-inner">
               <Cloud className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-black text-white tracking-tight">
+                <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">
                   Cloud Focus Session History
                 </h3>
-                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-[10px] font-bold text-emerald-400">
+                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   Supabase Uplink
                 </span>
               </div>
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-slate-500 dark:text-slate-400">
                 Synchronized Pomodoro sessions, device audit logs, and focus coin telemetry
               </span>
             </div>
@@ -464,7 +470,7 @@ export default function FocusPage() {
           <button
             onClick={loadHistory}
             disabled={isHistoryLoading}
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 text-xs font-bold border border-white/[0.08] transition shadow-sm self-start sm:self-auto disabled:opacity-50"
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-black/[0.03] dark:bg-white/[0.04] hover:bg-black/[0.06] dark:hover:bg-white/[0.08] text-slate-700 dark:text-slate-300 text-xs font-bold border border-black/5 dark:border-white/[0.08] transition shadow-sm self-start sm:self-auto disabled:opacity-50"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isHistoryLoading ? 'animate-spin' : ''}`} />
             <span>{isHistoryLoading ? 'Refreshing...' : 'Refresh Logs'}</span>
@@ -473,25 +479,25 @@ export default function FocusPage() {
 
         {/* 4 Summary Metric Badges */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="p-4 rounded-2xl bg-black/40 border border-white/[0.06] backdrop-blur-md">
-            <span className="text-xs text-slate-400 block font-semibold">Total Focused Time</span>
-            <span className="text-2xl font-black text-white font-mono mt-1 block">
+          <div className="p-4 rounded-2xl bg-black/[0.02] dark:bg-black/40 border border-black/5 dark:border-white/[0.06] backdrop-blur-md">
+            <span className="text-xs text-slate-500 dark:text-slate-400 block font-semibold">Total Focused Time</span>
+            <span className="text-2xl font-black text-slate-900 dark:text-white font-mono mt-1 block">
               {totalFocusMinutes}{' '}
               <span className="text-slate-500 text-xs font-normal">mins</span>
             </span>
           </div>
 
-          <div className="p-4 rounded-2xl bg-black/40 border border-white/[0.06] backdrop-blur-md">
-            <span className="text-xs text-slate-400 block font-semibold">Completed Cycles</span>
-            <span className="text-2xl font-black text-emerald-400 font-mono mt-1 block">
+          <div className="p-4 rounded-2xl bg-black/[0.02] dark:bg-black/40 border border-black/5 dark:border-white/[0.06] backdrop-blur-md">
+            <span className="text-xs text-slate-500 dark:text-slate-400 block font-semibold">Completed Cycles</span>
+            <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono mt-1 block">
               {completedCyclesCount}
             </span>
           </div>
 
-          <div className="p-4 rounded-2xl bg-black/40 border border-white/[0.06] backdrop-blur-md">
-            <span className="text-xs text-slate-400 block font-semibold">Focus Coins Earned</span>
-            <span className="text-2xl font-black text-amber-400 font-mono mt-1 flex items-center gap-1">
-              <Flame className="w-4 h-4 fill-amber-400" />+
+          <div className="p-4 rounded-2xl bg-black/[0.02] dark:bg-black/40 border border-black/5 dark:border-white/[0.06] backdrop-blur-md">
+            <span className="text-xs text-slate-500 dark:text-slate-400 block font-semibold">Focus Coins Earned</span>
+            <span className="text-2xl font-black text-amber-500 dark:text-amber-400 font-mono mt-1 flex items-center gap-1">
+              <Flame className="w-4 h-4 fill-amber-500 dark:fill-amber-400" />+
               {focusHistory.reduce(
                 (acc, s) =>
                   acc +
@@ -505,10 +511,10 @@ export default function FocusPage() {
             </span>
           </div>
 
-          <div className="p-4 rounded-2xl bg-black/40 border border-white/[0.06] backdrop-blur-md">
-            <span className="text-xs text-slate-400 block font-semibold">Active Shield Device</span>
-            <span className="text-sm font-bold text-slate-200 mt-2 flex items-center gap-1.5 truncate">
-              <Laptop className="w-4 h-4 text-cyan-400 shrink-0" />
+          <div className="p-4 rounded-2xl bg-black/[0.02] dark:bg-black/40 border border-black/5 dark:border-white/[0.06] backdrop-blur-md">
+            <span className="text-xs text-slate-500 dark:text-slate-400 block font-semibold">Active Shield Device</span>
+            <span className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-2 flex items-center gap-1.5 truncate">
+              <Laptop className="w-4 h-4 text-cyan-500 dark:text-cyan-400 shrink-0" />
               {browserName} Companion
             </span>
           </div>
@@ -518,7 +524,7 @@ export default function FocusPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-white/[0.06] text-slate-400 text-[11px] font-bold uppercase tracking-wider">
+              <tr className="border-b border-black/5 dark:border-white/[0.06] text-slate-500 dark:text-slate-400 text-[11px] font-bold uppercase tracking-wider">
                 <th className="pb-3 pl-1">Timestamp</th>
                 <th className="pb-3">Focus Cycle</th>
                 <th className="pb-3">Duration</th>
@@ -527,7 +533,7 @@ export default function FocusPage() {
                 <th className="pb-3 pr-1 text-right">Cloud Sync</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.04]">
+            <tbody className="divide-y divide-black/5 dark:divide-white/[0.04]">
               {focusHistory.map((session, idx) => {
                 const dateStr = session.started_at || session.startedAt || new Date().toISOString();
                 const dur = session.duration_minutes || session.durationMinutes || 25;
@@ -539,12 +545,12 @@ export default function FocusPage() {
                 });
 
                 return (
-                  <tr key={session.id || idx} className="hover:bg-white/[0.02] transition-colors">
-                    <td className="py-3.5 pl-1 font-mono text-slate-300">{formattedDate}</td>
+                  <tr key={session.id || idx} className="hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors">
+                    <td className="py-3.5 pl-1 font-mono text-slate-600 dark:text-slate-300">{formattedDate}</td>
                     <td className="py-3.5">
                       <div className="flex items-center gap-2">
                         <Timer className="w-3.5 h-3.5 text-leeting-orange" />
-                        <span className="font-semibold text-white">
+                        <span className="font-semibold text-slate-900 dark:text-white">
                           {dur === 25
                             ? 'Pomodoro Cycle'
                             : dur === 45
@@ -555,19 +561,19 @@ export default function FocusPage() {
                         </span>
                       </div>
                     </td>
-                    <td className="py-3.5 font-mono text-slate-300 font-bold">{dur} mins</td>
+                    <td className="py-3.5 font-mono text-slate-700 dark:text-slate-300 font-bold">{dur} mins</td>
                     <td className="py-3.5">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-500 dark:text-emerald-400" />
                         Completed
                       </span>
                     </td>
-                    <td className="py-3.5 text-slate-400">
+                    <td className="py-3.5 text-slate-500 dark:text-slate-400">
                       {session.device || `${browserName} MV3 Agent`}
                     </td>
                     <td className="py-3.5 pr-1 text-right">
-                      <span className="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-400 font-bold">
-                        <Cloud className="w-3 h-3 text-emerald-400" />
+                      <span className="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">
+                        <Cloud className="w-3 h-3 text-emerald-500 dark:text-emerald-400" />
                         Synced
                       </span>
                     </td>

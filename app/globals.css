@@ -3,6 +3,13 @@
 @tailwind utilities;
 
 :root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card-bg: rgba(255, 255, 255, 0.92);
+  --card-border: rgba(0, 0, 0, 0.08);
+}
+
+html.dark {
   --background: #08090d;
   --foreground: #f1f5f9;
   --card-bg: rgba(22, 28, 42, 0.7);
@@ -13,6 +20,16 @@
   box-sizing: border-box;
 }
 
+::selection {
+  background-color: rgba(245, 158, 11, 0.25);
+  color: #0f172a;
+}
+
+html.dark ::selection {
+  background-color: rgba(245, 158, 11, 0.35);
+  color: #ffffff;
+}
+
 body {
   color: var(--foreground);
   background: var(--background);
@@ -20,12 +37,17 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Subtle background grid pattern reminiscent of Linear & Vercel */
 .bg-grid-pattern {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(0, 0, 0, 0.06) 1px, transparent 1px);
   background-size: 24px 24px;
+}
+
+html.dark .bg-grid-pattern {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
 }
 
 /* Custom sleek scrollbar */
@@ -35,110 +57,275 @@ body {
 }
 
 ::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+html.dark ::-webkit-scrollbar-track {
   background: #08090d;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1b2130;
+  background: #cbd5e1;
   border-radius: 9999px;
 }
 
+html.dark ::-webkit-scrollbar-thumb {
+  background: #1b2130;
+}
+
 ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
   background: #2b354c;
 }
 
 /* Concept 4: Hybrid Obsidian Glassmorphism Classes */
 .glass-obsidian {
-  background: linear-gradient(180deg, rgba(22, 28, 42, 0.72) 0%, rgba(13, 17, 26, 0.68) 100%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.88) 100%);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  box-shadow: 0 12px 36px -4px rgba(0, 0, 0, 0.65), inset 0 1px 0 0 rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+html.dark .glass-obsidian {
+  background: linear-gradient(180deg, rgba(22, 28, 42, 0.72) 0%, rgba(13, 17, 26, 0.68) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow: 0 12px 36px -4px rgba(0, 0, 0, 0.65), inset 0 1px 0 0 rgba(255, 255, 255, 0.14);
+}
+
 .glass-obsidian:hover {
+  border-color: rgba(0, 0, 0, 0.14);
+  box-shadow: 0 14px 38px -6px rgba(0, 0, 0, 0.08), inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
+}
+
+html.dark .glass-obsidian:hover {
   border-color: rgba(255, 255, 255, 0.18);
   box-shadow: 0 16px 44px -6px rgba(0, 0, 0, 0.75), inset 0 1px 0 0 rgba(255, 255, 255, 0.22);
 }
 
 .glass-obsidian-card {
-  background: linear-gradient(180deg, rgba(20, 26, 38, 0.7) 0%, rgba(12, 15, 24, 0.65) 100%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(241, 245, 249, 0.85) 100%);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  box-shadow: 0 6px 20px -3px rgba(0, 0, 0, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+html.dark .glass-obsidian-card {
+  background: linear-gradient(180deg, rgba(20, 26, 38, 0.7) 0%, rgba(12, 15, 24, 0.65) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+}
+
 .glass-obsidian-card:hover {
+  border-color: rgba(0, 0, 0, 0.12);
+  box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.07), inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
+  transform: translateY(-2px);
+}
+
+html.dark .glass-obsidian-card:hover {
   border-color: rgba(255, 255, 255, 0.16);
   box-shadow: 0 16px 40px -6px rgba(0, 0, 0, 0.7), inset 0 1px 0 0 rgba(255, 255, 255, 0.18);
   transform: translateY(-2px);
 }
 
 .glass-pill {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(0, 0, 0, 0.03);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+html.dark .glass-pill {
+  background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* ==============================================================================
-   CLERK DARK THEME CONTRAST & VISIBILITY OVERRIDES (Crisp Light Text)
+   CLERK AUTH THEME OVERRIDES (Full Light & Dark Obsidian Adaptability)
    ============================================================================== */
-.cl-card {
+/* Dark Mode Overrides */
+html.dark .cl-card {
   background-color: #0c1018 !important;
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
   color: #f8fafc !important;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7) !important;
 }
 
-.cl-headerTitle {
+html.dark .cl-headerTitle {
   color: #ffffff !important;
   font-weight: 800 !important;
 }
 
-.cl-headerSubtitle {
+html.dark .cl-headerSubtitle {
   color: #cbd5e1 !important;
 }
 
-.cl-socialButtonsBlockButton {
+html.dark .cl-socialButtonsBlockButton {
   background-color: rgba(255, 255, 255, 0.06) !important;
   border: 1px solid rgba(255, 255, 255, 0.14) !important;
   color: #f8fafc !important;
 }
 
-.cl-socialButtonsBlockButton:hover {
+html.dark .cl-socialButtonsBlockButton:hover {
   background-color: rgba(255, 255, 255, 0.12) !important;
 }
 
-.cl-socialButtonsBlockButtonText {
+html.dark .cl-socialButtonsBlockButtonText {
   color: #f8fafc !important;
   font-weight: 600 !important;
 }
 
-.cl-dividerLine {
+html.dark .cl-dividerLine {
   background-color: rgba(255, 255, 255, 0.14) !important;
 }
 
-.cl-dividerText {
+html.dark .cl-dividerText {
   color: #94a3b8 !important;
   font-weight: 600 !important;
 }
 
-.cl-formFieldLabel {
+html.dark .cl-formFieldLabel {
   color: #f1f5f9 !important;
   font-weight: 600 !important;
 }
 
-.cl-formFieldInput {
+html.dark .cl-formFieldInput {
   background-color: #131823 !important;
   border: 1px solid rgba(255, 255, 255, 0.18) !important;
   color: #ffffff !important;
 }
 
-.cl-formFieldInput::placeholder {
+html.dark .cl-formFieldInput::placeholder {
   color: #64748b !important;
+}
+
+html.dark .cl-footerActionText {
+  color: #cbd5e1 !important;
+}
+
+html.dark .cl-footerActionLink {
+  color: #ffa116 !important;
+  font-weight: 700 !important;
+}
+
+html.dark .cl-identityPreviewText {
+  color: #ffffff !important;
+}
+
+html.dark .cl-userButtonPopoverCard {
+  background-color: #0c1018 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+html.dark .cl-userButtonPopoverActionButtonText {
+  color: #f1f5f9 !important;
+}
+
+/* Light Mode Overrides */
+html:not(.dark) .cl-card,
+html.light .cl-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.94) 100%) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  color: #0f172a !important;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04) !important;
+}
+
+html:not(.dark) .cl-headerTitle,
+html.light .cl-headerTitle {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+}
+
+html:not(.dark) .cl-headerSubtitle,
+html.light .cl-headerSubtitle {
+  color: #475569 !important;
+}
+
+html:not(.dark) .cl-socialButtonsBlockButton,
+html.light .cl-socialButtonsBlockButton {
+  background-color: #f1f5f9 !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  color: #1e293b !important;
+}
+
+html:not(.dark) .cl-socialButtonsBlockButton:hover,
+html.light .cl-socialButtonsBlockButton:hover {
+  background-color: #e2e8f0 !important;
+}
+
+html:not(.dark) .cl-socialButtonsBlockButtonText,
+html.light .cl-socialButtonsBlockButtonText {
+  color: #1e293b !important;
+  font-weight: 600 !important;
+}
+
+html:not(.dark) .cl-dividerLine,
+html.light .cl-dividerLine {
+  background-color: #e2e8f0 !important;
+}
+
+html:not(.dark) .cl-dividerText,
+html.light .cl-dividerText {
+  color: #64748b !important;
+  font-weight: 600 !important;
+}
+
+html:not(.dark) .cl-formFieldLabel,
+html.light .cl-formFieldLabel {
+  color: #334155 !important;
+  font-weight: 600 !important;
+}
+
+html:not(.dark) .cl-formFieldInput,
+html.light .cl-formFieldInput {
+  background-color: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+html:not(.dark) .cl-formFieldInput::placeholder,
+html.light .cl-formFieldInput::placeholder {
+  color: #94a3b8 !important;
+}
+
+html:not(.dark) .cl-footerActionText,
+html.light .cl-footerActionText {
+  color: #64748b !important;
+}
+
+html:not(.dark) .cl-footerActionLink,
+html.light .cl-footerActionLink {
+  color: #ea580c !important;
+  font-weight: 700 !important;
+}
+
+html:not(.dark) .cl-identityPreviewText,
+html.light .cl-identityPreviewText {
+  color: #0f172a !important;
+}
+
+html:not(.dark) .cl-userButtonPopoverCard,
+html.light .cl-userButtonPopoverCard {
+  background-color: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1) !important;
+}
+
+html:not(.dark) .cl-userButtonPopoverActionButtonText,
+html.light .cl-userButtonPopoverActionButtonText {
+  color: #1e293b !important;
+}
+
+html:not(.dark) .cl-footer,
+html.light .cl-footer {
+  background: transparent !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.06) !important;
 }
 
 .cl-formButtonPrimary {
@@ -147,24 +334,66 @@ body {
   font-weight: 800 !important;
 }
 
-.cl-footerActionText {
-  color: #cbd5e1 !important;
+/* Optional suppression of Clerk development mode badge in local UI */
+.cl-developmentModeBadge,
+[data-localization-key="badge__devMode"],
+[data-localization-key*="devMode"],
+.cl-card [class*="devMode"],
+.cl-card [class*="developmentMode"],
+.cl-card [class*="badge__devMode"] {
+  display: none !important;
 }
 
-.cl-footerActionLink {
-  color: #ffa116 !important;
-  font-weight: 700 !important;
+/* ==============================================================================
+   HEATMAP SLIDE ANIMATIONS (Smooth tab switching transitions)
+   ============================================================================== */
+@keyframes heatmapSlideFromRight {
+  0% {
+    opacity: 0;
+    transform: translate3d(50px, 0, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
 }
 
-.cl-identityPreviewText {
-  color: #ffffff !important;
+@keyframes heatmapSlideFromLeft {
+  0% {
+    opacity: 0;
+    transform: translate3d(-50px, 0, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
 }
 
-.cl-userButtonPopoverCard {
-  background-color: #0c1018 !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+.animate-heatmap-slide-from-right {
+  animation: heatmapSlideFromRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
 }
 
-.cl-userButtonPopoverActionButtonText {
-  color: #f1f5f9 !important;
+.animate-heatmap-slide-from-left {
+  animation: heatmapSlideFromLeft 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+}
+
+/* ==============================================================================
+   PROGRESSIVE ROW ENTRANCE ANIMATION (One-by-one cascade)
+   ============================================================================== */
+@keyframes rowFadeIn {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.animate-row-fade-in {
+  animation: rowFadeIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
 }

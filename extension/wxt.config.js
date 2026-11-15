@@ -12,6 +12,7 @@ export default defineConfig({
       'alarms',
       'notifications',
       'cookies',
+      'tabs',
       'declarativeNetRequest',
       'declarativeNetRequestWithHostAccess'
     ],

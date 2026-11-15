@@ -69,37 +69,44 @@ export default defineContentScript({
     const intervalId = setInterval(announcePresence, 2000);
 
     // Immediately broadcast current storage snapshot to web app
-    if (typeof chrome !== 'undefined' && chrome.storage?.local?.get) {
-      chrome.storage.local.get(null, (items) => {
-        if (!items) return;
-        const payload = {};
-        if (items.leeting_focus_mode_enabled !== undefined) {
-          payload.focusMode = Boolean(items.leeting_focus_mode_enabled);
-        }
-        if (items.leeting_solve_before_scroll_enabled !== undefined) {
-          payload.solveBeforeScroll = Boolean(items.leeting_solve_before_scroll_enabled);
-        }
-        if (items.leeting_cached_daily !== undefined) {
-          payload.daily = items.leeting_cached_daily;
-        }
-        if (items.leeting_cached_contests !== undefined) {
-          payload.contests = items.leeting_cached_contests;
-        }
-        if (items.leeting_cached_user !== undefined) {
-          payload.user = items.leeting_cached_user;
-        }
-        if (items.leeting_active_timer !== undefined) {
-          payload.activeTimer = items.leeting_active_timer;
-        }
-        if (Object.keys(payload).length > 0) {
-          broadcastToPage({
-            source: 'LEETING_EXTENSION_BRIDGE',
-            type: 'STATE_CHANGED',
-            payload,
-          });
-        }
-      });
-    }
+    const broadcastStorageSnapshot = () => {
+      if (typeof chrome !== 'undefined' && chrome.storage?.local?.get) {
+        chrome.storage.local.get(null, (items) => {
+          if (!items) return;
+          const payload = {};
+          if (items.leeting_focus_mode_enabled !== undefined) {
+            payload.focusMode = Boolean(items.leeting_focus_mode_enabled);
+          }
+          if (items.leeting_solve_before_scroll_enabled !== undefined) {
+            payload.solveBeforeScroll = Boolean(items.leeting_solve_before_scroll_enabled);
+          }
+          if (items.leeting_auto_focus_locked !== undefined) {
+            payload.autoLocked = Boolean(items.leeting_auto_focus_locked);
+          }
+          if (items.leeting_cached_daily !== undefined) {
+            payload.daily = items.leeting_cached_daily;
+          }
+          if (items.leeting_cached_contests !== undefined) {
+            payload.contests = items.leeting_cached_contests;
+          }
+          if (items.leeting_cached_user !== undefined) {
+            payload.user = items.leeting_cached_user;
+          }
+          if (items.leeting_active_timer !== undefined) {
+            payload.activeTimer = items.leeting_active_timer;
+          }
+          if (Object.keys(payload).length > 0) {
+            broadcastToPage({
+              source: 'LEETING_EXTENSION_BRIDGE',
+              type: 'STATE_CHANGED',
+              payload,
+            });
+          }
+        });
+      }
+    };
+
+    broadcastStorageSnapshot();
 
     // Broadcast storage updates in real-time to the web dashboard
     if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
@@ -161,6 +168,8 @@ export default defineContentScript({
     }
 
     // Relay commands from Web App -> Extension Background Service Worker
+    const handledRequestIds = new Set();
+
     const handleCommand = async (cmdData) => {
       if (!cmdData || cmdData.source !== 'LEETING_WEB_APP') {
         return;
@@ -170,7 +179,17 @@ export default defineContentScript({
 
       if (type === 'PING_PRESENCE') {
         announcePresence();
+        broadcastStorageSnapshot();
         return;
+      }
+
+      if (requestId) {
+        if (handledRequestIds.has(requestId)) return;
+        handledRequestIds.add(requestId);
+        if (handledRequestIds.size > 200) {
+          const first = handledRequestIds.values().next().value;
+          handledRequestIds.delete(first);
+        }
       }
 
       if (typeof chrome === 'undefined' || !chrome.runtime?.id) {
@@ -198,6 +217,11 @@ export default defineContentScript({
           success: true,
           data: response,
         });
+
+        // Trigger snapshot update after modifying state
+        if (type === 'SET_FOCUS_MODE' || type === 'SET_SOLVE_BEFORE_SCROLL' || type === 'START_FOCUS_TIMER' || type === 'STOP_FOCUS_TIMER') {
+          setTimeout(broadcastStorageSnapshot, 50);
+        }
       } catch (err) {
         broadcastToPage({
           source: 'LEETING_EXTENSION_BRIDGE',

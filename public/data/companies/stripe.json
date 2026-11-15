@@ -1,0 +1,174 @@
+{
+  "name": "Stripe",
+  "slug": "stripe",
+  "timeframes": {
+    "thirty-days": [],
+    "three-months": [],
+    "six-months": [
+      {
+        "title": "Merge Intervals",
+        "difficulty": "Medium",
+        "frequency": 100,
+        "acceptance": "53.0%",
+        "link": "https://leetcode.com/problems/merge-intervals",
+        "topics": [
+          "Array",
+          "Sorting",
+          "Quicksort"
+        ]
+      }
+    ],
+    "all": [
+      {
+        "title": "Minimum Penalty for a Shop",
+        "difficulty": "Medium",
+        "frequency": 100,
+        "acceptance": "71.3%",
+        "link": "https://leetcode.com/problems/minimum-penalty-for-a-shop",
+        "topics": [
+          "String",
+          "Prefix Sum"
+        ]
+      },
+      {
+        "title": "Calculate Amount Paid in Taxes",
+        "difficulty": "Easy",
+        "frequency": 97.2,
+        "acceptance": "69.7%",
+        "link": "https://leetcode.com/problems/calculate-amount-paid-in-taxes",
+        "topics": [
+          "Array",
+          "Simulation"
+        ]
+      },
+      {
+        "title": "Invalid Transactions",
+        "difficulty": "Medium",
+        "frequency": 94,
+        "acceptance": "32.6%",
+        "link": "https://leetcode.com/problems/invalid-transactions",
+        "topics": [
+          "Array",
+          "Hash Table",
+          "String",
+          "Sorting"
+        ]
+      },
+      {
+        "title": "Cheapest Flights Within K Stops",
+        "difficulty": "Medium",
+        "frequency": 86,
+        "acceptance": "42.7%",
+        "link": "https://leetcode.com/problems/cheapest-flights-within-k-stops",
+        "topics": [
+          "Dynamic Programming",
+          "Depth-First Search",
+          "Breadth-First Search",
+          "Graph Theory",
+          "Heap (Priority Queue)",
+          "Shortest Path"
+        ]
+      },
+      {
+        "title": "Brace Expansion",
+        "difficulty": "Medium",
+        "frequency": 80.8,
+        "acceptance": "66.9%",
+        "link": "https://leetcode.com/problems/brace-expansion",
+        "topics": [
+          "String",
+          "Backtracking",
+          "Stack",
+          "Breadth-First Search",
+          "Sorting"
+        ]
+      },
+      {
+        "title": "Merge Intervals",
+        "difficulty": "Medium",
+        "frequency": 73.9,
+        "acceptance": "53.0%",
+        "link": "https://leetcode.com/problems/merge-intervals",
+        "topics": [
+          "Array",
+          "Sorting",
+          "Quicksort"
+        ]
+      },
+      {
+        "title": "Parallel Courses III",
+        "difficulty": "Hard",
+        "frequency": 64.3,
+        "acceptance": "66.8%",
+        "link": "https://leetcode.com/problems/parallel-courses-iii",
+        "topics": [
+          "Array",
+          "Dynamic Programming",
+          "Graph Theory",
+          "Topological Sort",
+          "Directed Acyclic Graph"
+        ]
+      },
+      {
+        "title": "One Edit Distance",
+        "difficulty": "Medium",
+        "frequency": 64.3,
+        "acceptance": "34.6%",
+        "link": "https://leetcode.com/problems/one-edit-distance",
+        "topics": [
+          "Two Pointers",
+          "String"
+        ]
+      },
+      {
+        "title": "Number of Black Blocks",
+        "difficulty": "Medium",
+        "frequency": 64.3,
+        "acceptance": "41.0%",
+        "link": "https://leetcode.com/problems/number-of-black-blocks",
+        "topics": [
+          "Array",
+          "Hash Table",
+          "Enumeration"
+        ]
+      },
+      {
+        "title": "Alert Using Same Key-Card Three or More Times in a One Hour Period",
+        "difficulty": "Medium",
+        "frequency": 64.3,
+        "acceptance": "46.4%",
+        "link": "https://leetcode.com/problems/alert-using-same-key-card-three-or-more-times-in-a-one-hour-period",
+        "topics": [
+          "Array",
+          "Hash Table",
+          "String",
+          "Sorting"
+        ]
+      },
+      {
+        "title": "Simple Bank System",
+        "difficulty": "Medium",
+        "frequency": 64.3,
+        "acceptance": "69.4%",
+        "link": "https://leetcode.com/problems/simple-bank-system",
+        "topics": [
+          "Array",
+          "Hash Table",
+          "Design",
+          "Simulation"
+        ]
+      },
+      {
+        "title": "Next Permutation",
+        "difficulty": "Medium",
+        "frequency": 64.3,
+        "acceptance": "46.4%",
+        "link": "https://leetcode.com/problems/next-permutation",
+        "topics": [
+          "Array",
+          "Two Pointers"
+        ]
+      }
+    ]
+  }
+}

@@ -144,10 +144,14 @@ export async function GET(request) {
             difficultyStats[item.difficulty.toLowerCase()] = item.count;
           });
         }
+        const totalSolved = difficultyStats
+          ? (difficultyStats.all ?? ((difficultyStats.easy || 0) + (difficultyStats.medium || 0) + (difficultyStats.hard || 0)))
+          : 0;
         user = {
           username: matched.username,
           avatar: matched.profile?.userAvatar || null,
           ranking: matched.profile?.ranking || null,
+          totalSolved,
           submissionCalendar: matched.userCalendar?.submissionCalendar || null,
           totalActiveDays: matched.userCalendar?.totalActiveDays || 0,
           streak: matched.userCalendar?.streak || 0,

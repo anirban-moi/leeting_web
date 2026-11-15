@@ -31,8 +31,24 @@ export function AuthProvider({ children }) {
       }
     : null;
 
-  // Auto-sync / upsert profile in Supabase when signed in with Clerk
+  // Auto-sync / upsert profile in Supabase and cache locally when signed in with Clerk
   useEffect(() => {
+    if (isSignedIn && clerkUser) {
+      import('../../lib/services/user-cache').then(({ saveUserCache }) => {
+        saveUserCache({
+          userId: clerkUser.id,
+          email: clerkUser.primaryEmailAddress?.emailAddress || '',
+          username:
+            clerkUser.username ||
+            clerkUser.firstName ||
+            clerkUser.primaryEmailAddress?.emailAddress?.split('@')[0] ||
+            'The-Boss',
+          fullName: clerkUser.fullName || '',
+          avatar: clerkUser.imageUrl || '',
+        });
+      });
+    }
+
     if (isSignedIn && clerkUser && !profileSynced) {
       import('../../lib/services/profile-service').then(({ fetchUserProfile, updateUserProfile }) => {
         fetchUserProfile(clerkUser.id).then((existingProfile) => {
